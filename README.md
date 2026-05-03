@@ -204,3 +204,5 @@ zwraca średnie wartości dla każdej platformy:
 Ponieważ dataset może zawierać bardzo dużo rekordów, endpoint `/usage` zwraca tylko pierwsze 100 rekordów posortowanych po `id`.
 
 Dzięki temu frontend nie zawiesza się przy pobieraniu danych.
+
+Dataset należy pobrać ręcznie z Kaggle i umieścić w folderze `backend` : https://www.kaggle.com/datasets/sharmajicoder/gen-z-social-media-usage-dataset
