@@ -322,3 +322,151 @@ http://127.0.0.1:5500
 - Dataset nie jest przechowywany w repozytorium (ze względu na rozmiar)
 - Należy go pobrać z Kaggle i umieścić w `backend/data.csv`
 - Endpoint `/usage` zwraca ograniczoną liczbę rekordów dla wydajności
+
+---
+
+## Lab 3 – Konteneryzacja (Docker)
+
+W ramach zadania przygotowano konfigurację konteneryzacji całej aplikacji przy użyciu **Dockera** i **Docker Compose**.
+
+### Cel
+
+Celem było umieszczenie każdego komponentu aplikacji w osobnym kontenerze aplikacyjnym:
+- baza danych PostgreSQL,
+- backend (Flask),
+- frontend (nginx).
+
+Całość uruchamiana jest jedną komendą przy użyciu Docker Compose.
+
+---
+
+## Wymagania
+
+Do uruchomienia wymagane są:
+
+- Docker
+- Docker Compose
+
+---
+
+## Uruchomienie projektu
+
+### 1. Zbuduj obrazy i uruchom kontenery
+
+W głównym folderze projektu:
+
+```bash
+docker compose up --build
+```
+
+Podczas uruchamiania:
+- budowany jest obraz backendu na podstawie `backend/Dockerfile`,
+- budowany jest obraz frontendu na podstawie `frontend/Dockerfile`,
+- pobierany jest oficjalny obraz PostgreSQL 16,
+- tworzona jest sieć łącząca wszystkie kontenery,
+- backend czeka na gotowość bazy danych przed startem.
+
+---
+
+### 2. Sprawdź działające kontenery
+
+```bash
+docker ps
+```
+
+Powinny być widoczne trzy kontenery:
+
+```txt
+genz_db
+genz_backend
+genz_frontend
+```
+
+---
+
+### 3. Import danych
+
+W osobnym terminalu:
+
+```bash
+cd backend
+python import_csv.py
+```
+
+---
+
+## Adresy po uruchomieniu
+
+Frontend:
+
+```txt
+http://localhost:8080
+```
+
+Backend API:
+
+```txt
+http://localhost:5000
+```
+
+---
+
+## Testowanie API
+
+### Pobranie rekordów
+
+```txt
+http://localhost:5000/usage
+```
+
+### Filtrowanie po platformie
+
+```txt
+http://localhost:5000/usage?platform=TikTok
+```
+
+### Pobranie rekordu po ID
+
+```txt
+http://localhost:5000/usage/1
+```
+
+### Statystyki
+
+```txt
+http://localhost:5000/stats
+```
+
+---
+
+## Opis działania
+
+- `db` – kontener z PostgreSQL, dane przechowywane w wolumenie `postgres_data`
+- `backend` – kontener z Flask API, łączy się z bazą przez wewnętrzną sieć Dockera
+- `frontend` – kontener z nginx serwującym stronę HTML
+
+Backend nie startuje dopóki baza danych nie jest gotowa na połączenia (healthcheck).
+
+Kontenery komunikują się przez wewnętrzną sieć Docker – backend adresuje bazę nazwą `db`, nie `localhost`.
+
+---
+
+## Zatrzymanie projektu
+
+```bash
+docker compose down
+```
+
+Aby zatrzymać i usunąć dane bazy:
+
+```bash
+docker compose down -v
+```
+
+---
+
+## Uwagi
+
+- Dataset nie jest przechowywany w repozytorium (ze względu na rozmiar)
+- Należy go pobrać z Kaggle i umieścić w `backend/genz_social_media_usage_1M.csv`
+- Endpoint `/usage` zwraca ograniczoną liczbę rekordów dla wydajności

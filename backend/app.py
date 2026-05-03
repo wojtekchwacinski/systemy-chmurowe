@@ -2,16 +2,17 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import psycopg2
 import psycopg2.extras
+import os
 
 app = Flask(__name__)
 CORS(app)
 
 DB_CONFIG = {
-    "host": "localhost",
-    "database": "genz_social",
-    "user": "postgres",
-    "password": "postgres",
-    "port": 5432
+    "host": os.getenv("DB_HOST", "localhost"),
+    "database": os.getenv("DB_NAME", "genz_social"),
+    "user": os.getenv("DB_USER", "postgres"),
+    "password": os.getenv("DB_PASSWORD", "postgres"),
+    "port": int(os.getenv("DB_PORT", 5432))
 }
 
 def get_connection():
@@ -142,8 +143,9 @@ def get_usage_by_id(id):
         return jsonify({"error": "Nie znaleziono rekordu"}), 404
 
     return jsonify(data)
+
 # ======================
-# STATS (5.0 🔥)
+# STATS
 # ======================
 @app.route("/stats", methods=["GET"])
 def get_stats():
