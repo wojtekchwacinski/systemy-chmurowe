@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Gen Z Social Media Usage</title>
+</head>
+<body>
+    <h1>Gen Z Social Media Usage</h1>
+
+    <h2>Lista / filtrowanie</h2>
+    <input id="filterPlatform" placeholder="np. TikTok">
+    <button onclick="loadData()">Pobierz dane</button>
+    <button onclick="loadStats()">Statystyki</button>
+
+    <hr>
+
+    <h2>Dodaj / edytuj rekord</h2>
+
+    <input id="edit_id" placeholder="ID rekordu do edycji" type="number">
+    <button onclick="loadRecordById()">Pobierz rekord do edycji</button>
+
+    <br><br>
+
+    <input id="age" placeholder="Age" type="number">
+    <input id="gender" placeholder="Gender">
+    <input id="country" placeholder="Country">
+    <input id="daily_usage_hours" placeholder="Daily usage hours" type="number" step="0.1">
+    <input id="primary_platform" placeholder="Primary platform">
+    <input id="num_platforms_used" placeholder="Num platforms used" type="number">
+    <input id="purpose" placeholder="Purpose">
+    <input id="avg_session_minutes" placeholder="Avg session minutes" type="number" step="0.1">
+    <input id="night_usage" placeholder="Night usage">
+    <input id="mental_health_score" placeholder="Mental health score" type="number">
+    <input id="addiction_level" placeholder="Addiction level">
+    <input id="screen_time_before_sleep" placeholder="Screen time before sleep" type="number" step="0.1">
+
+    <br><br>
+
+    <button onclick="addRecord()">Dodaj jako nowy rekord</button>
+    <button onclick="updateRecord()">Zaktualizuj istniejący rekord</button>
+    <button onclick="clearForm()">Wyczyść formularz</button>
+
+    <hr>
+
+    <h2>Wynik</h2>
+    <pre id="result"></pre>
+
+    <script>
+        const API = "http://127.0.0.1:5000";
+
+        function getFormData() {
+            return {
+                age: Number(document.getElementById("age").value),
+                gender: document.getElementById("gender").value,
+                country: document.getElementById("country").value,
+                daily_usage_hours: Number(document.getElementById("daily_usage_hours").value),
+                primary_platform: document.getElementById("primary_platform").value,
+                num_platforms_used: Number(document.getElementById("num_platforms_used").value),
+                purpose: document.getElementById("purpose").value,
+                avg_session_minutes: Number(document.getElementById("avg_session_minutes").value),
+                night_usage: document.getElementById("night_usage").value,
+                mental_health_score: Number(document.getElementById("mental_health_score").value),
+                addiction_level: document.getElementById("addiction_level").value,
+                screen_time_before_sleep: Number(document.getElementById("screen_time_before_sleep").value)
+            };
+        }
+
+        function fillForm(data) {
+            document.getElementById("age").value = data.age;
+            document.getElementById("gender").value = data.gender;
+            document.getElementById("country").value = data.country;
+            document.getElementById("daily_usage_hours").value = data.daily_usage_hours;
+            document.getElementById("primary_platform").value = data.primary_platform;
+            document.getElementById("num_platforms_used").value = data.num_platforms_used;
+            document.getElementById("purpose").value = data.purpose;
+            document.getElementById("avg_session_minutes").value = data.avg_session_minutes;
+            document.getElementById("night_usage").value = data.night_usage;
+            document.getElementById("mental_health_score").value = data.mental_health_score;
+            document.getElementById("addiction_level").value = data.addiction_level;
+            document.getElementById("screen_time_before_sleep").value = data.screen_time_before_sleep;
+        }
+
+        function clearForm() {
+            document.getElementById("edit_id").value = "";
+            document.getElementById("age").value = "";
+            document.getElementById("gender").value = "";
+            document.getElementById("country").value = "";
+            document.getElementById("daily_usage_hours").value = "";
+            document.getElementById("primary_platform").value = "";
+            document.getElementById("num_platforms_used").value = "";
+            document.getElementById("purpose").value = "";
+            document.getElementById("avg_session_minutes").value = "";
+            document.getElementById("night_usage").value = "";
+            document.getElementById("mental_health_score").value = "";
+            document.getElementById("addiction_level").value = "";
+            document.getElementById("screen_time_before_sleep").value = "";
+        }
+
+        async function loadData() {
+            const platform = document.getElementById("filterPlatform").value;
+            let url = `${API}/usage`;
+
+            if (platform) {
+                url += `?platform=${platform}`;
+            }
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            document.getElementById("result").textContent =
+                JSON.stringify(data, null, 2);
+        }
+
+        async function loadStats() {
+            const response = await fetch(`${API}/stats`);
+            const data = await response.json();
+
+            document.getElementById("result").textContent =
+                JSON.stringify(data, null, 2);
+        }
+
+        async function loadRecordById() {
+            const id = document.getElementById("edit_id").value;
+
+            if (!id) {
+                alert("Podaj ID rekordu");
+                return;
+            }
+
+            const response = await fetch(`${API}/usage/${id}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert("Nie znaleziono rekordu");
+                return;
+            }
+
+            fillForm(data);
+
+            document.getElementById("result").textContent =
+                JSON.stringify(data, null, 2);
+        }
+
+        async function addRecord() {
+            const record = getFormData();
+
+            const response = await fetch(`${API}/usage`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(record)
+            });
+
+            const result = await response.json();
+
+            document.getElementById("result").textContent =
+                JSON.stringify(result, null, 2);
+
+            loadData();
+        }
+
+        async function updateRecord() {
+            const id = document.getElementById("edit_id").value;
+
+            if (!id) {
+                alert("Podaj ID rekordu do edycji");
+                return;
+            }
+
+            const record = getFormData();
+
+            const response = await fetch(`${API}/usage/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(record)
+            });
+
+            const result = await response.json();
+
+            document.getElementById("result").textContent =
+                JSON.stringify(result, null, 2);
+
+            loadData();
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
