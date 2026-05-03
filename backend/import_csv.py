@@ -7,7 +7,7 @@ DB_CONFIG = {
     "database": "genz_social",
     "user": "postgres",
     "password": "postgres",
-    "port": 5433
+    "port": 5432
 }
 
 df = pd.read_csv("genz_social_media_usage_1M.csv")

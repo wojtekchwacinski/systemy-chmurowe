@@ -9,6 +9,7 @@ Aplikacja składa się z:
 - backendu REST API we Flasku,
 - prostego frontendu HTML/JavaScript.
 
+## LAB 1
 Dataset pochodzi z Kaggle: **Gen-Z Social Media Usage Dataset**.
 Dataset należy pobrać ręcznie z Kaggle i umieścić w folderze `backend` : https://www.kaggle.com/datasets/sharmajicoder/gen-z-social-media-usage-dataset
 ## Funkcje aplikacji
@@ -205,3 +206,119 @@ Ponieważ dataset może zawierać bardzo dużo rekordów, endpoint `/usage` zwra
 
 Dzięki temu frontend nie zawiesza się przy pobieraniu danych.
 
+## Lab 2 – Wirtualizacja (Vagrant + Ansible)
+
+W ramach zadania przygotowano środowisko projektu w postaci maszyny wirtualnej z wykorzystaniem narzędzi **Vagrant** oraz **Ansible** (infrastruktura jako kod).
+
+### Cel
+
+Celem było stworzenie powtarzalnego środowiska uruchomieniowego zawierającego wszystkie komponenty aplikacji:
+- bazę danych PostgreSQL,
+- backend (Flask),
+- frontend (HTML/JavaScript).
+
+Środowisko jest konfigurowane automatycznie przy użyciu Ansible.
+
+---
+
+## Wymagania
+
+Do uruchomienia wymagane są:
+
+- VirtualBox
+- Vagrant
+
+---
+
+## Uruchomienie projektu
+
+### 1. Uruchomienie maszyny wirtualnej
+
+W głównym folderze projektu:
+
+```bash
+vagrant up
+```
+
+Podczas uruchamiania:
+- tworzona jest maszyna wirtualna (Ubuntu),
+- instalowane są zależności (Python, PostgreSQL),
+- konfigurowane jest środowisko przy użyciu Ansible.
+
+---
+
+### 2. Połączenie z maszyną
+
+```bash
+vagrant ssh
+```
+
+---
+
+### 3. Import danych
+
+```bash
+cd /vagrant/backend
+python3 import_csv.py
+```
+
+---
+
+### 4. Uruchomienie backendu
+
+```bash
+python3 app.py
+```
+
+Backend dostępny pod adresem:
+
+```txt
+http://127.0.0.1:5000
+```
+
+---
+
+### 5. Uruchomienie frontendu
+
+W drugim terminalu:
+
+```bash
+vagrant ssh
+cd /vagrant/frontend
+python3 -m http.server 5500
+```
+
+Frontend dostępny pod adresem:
+
+```txt
+http://127.0.0.1:5500
+```
+
+---
+
+## Opis działania
+
+- Vagrant odpowiada za tworzenie maszyny wirtualnej
+- Ansible automatycznie konfiguruje środowisko (instaluje pakiety, bazę danych, zależności)
+- Folder projektu jest współdzielony jako `/vagrant`
+- Backend komunikuje się z bazą PostgreSQL
+- Frontend komunikuje się z backendem przez REST API
+
+---
+
+## Endpointy API
+
+- `GET /usage` – pobranie danych
+- `GET /usage?platform=TikTok` – filtrowanie
+- `GET /usage/<id>` – pobranie rekordu po ID
+- `POST /usage` – dodanie rekordu
+- `PUT /usage/<id>` – edycja rekordu
+- `GET /stats` – statystyki
+
+---
+
+## Uwagi
+
+- Dataset nie jest przechowywany w repozytorium (ze względu na rozmiar)
+- Należy go pobrać z Kaggle i umieścić w `backend/data.csv`
+- Endpoint `/usage` zwraca ograniczoną liczbę rekordów dla wydajności

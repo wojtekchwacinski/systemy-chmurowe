@@ -1,0 +1,37 @@
+- hosts: all
+  become: yes
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - postgresql
+          - postgresql-contrib
+          - libpq-dev
+        state: present
+
+    - name: Start PostgreSQL
+      service:
+        name: postgresql
+        state: started
+        enabled: yes
+
+    - name: Set postgres password
+      shell: sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+      changed_when: false
+
+    - name: Create database
+      shell: sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = 'genz_social'" | grep -q 1 || sudo -u postgres createdb genz_social
+      changed_when: false
+
+    - name: Install Python requirements
+      pip:
+        requirements: /vagrant/backend/requirements.txt
+        executable: pip3

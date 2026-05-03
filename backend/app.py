@@ -11,7 +11,7 @@ DB_CONFIG = {
     "database": "genz_social",
     "user": "postgres",
     "password": "postgres",
-    "port": 5433
+    "port": 5432
 }
 
 def get_connection():
@@ -169,4 +169,4 @@ def get_stats():
     return jsonify(data)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)
