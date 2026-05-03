@@ -10,7 +10,7 @@ Aplikacja składa się z:
 - prostego frontendu HTML/JavaScript.
 
 Dataset pochodzi z Kaggle: **Gen-Z Social Media Usage Dataset**.
-
+Dataset należy pobrać ręcznie z Kaggle i umieścić w folderze `backend` : https://www.kaggle.com/datasets/sharmajicoder/gen-z-social-media-usage-dataset
 ## Funkcje aplikacji
 
 | Metoda | Endpoint | Opis |
@@ -33,7 +33,7 @@ systemy-chmurowe/
 │   ├── app.py
 │   ├── import_csv.py
 │   ├── requirements.txt
-│   └── data.csv
+│   └── genz_social_media_usage_1M.csv
 └── frontend/
     └── index.html
 ```
@@ -205,4 +205,3 @@ Ponieważ dataset może zawierać bardzo dużo rekordów, endpoint `/usage` zwra
 
 Dzięki temu frontend nie zawiesza się przy pobieraniu danych.
 
-Dataset należy pobrać ręcznie z Kaggle i umieścić w folderze `backend` : https://www.kaggle.com/datasets/sharmajicoder/gen-z-social-media-usage-dataset
