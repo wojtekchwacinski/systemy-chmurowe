@@ -470,3 +470,193 @@ docker compose down -v
 - Dataset nie jest przechowywany w repozytorium (ze względu na rozmiar)
 - Należy go pobrać z Kaggle i umieścić w `backend/genz_social_media_usage_1M.csv`
 - Endpoint `/usage` zwraca ograniczoną liczbę rekordów dla wydajności
+
+---
+
+## Lab 4 – Kubernetes
+
+W ramach zadania przygotowano konfigurację wdrożenia aplikacji w klastrze **Kubernetes** przy użyciu narzędzia **kind** (Kubernetes in Docker).
+
+### Cel
+
+Celem było uruchomienie każdego komponentu aplikacji jako osobnej kapsuły (Pod) w klastrze Kubernetes:
+- baza danych PostgreSQL z trwałym woluminem,
+- backend (Flask),
+- frontend (nginx).
+
+Każdy komponent posiada osobną usługę (Service) oraz sondę żywotności (liveness probe).
+
+---
+
+## Wymagania
+
+Do uruchomienia wymagane są:
+
+- Docker
+- kind
+- kubectl
+
+---
+
+## Uruchomienie projektu
+
+### 1. Przejdź do folderu lab4
+
+```bash
+cd lab4
+```
+
+### 2. Utwórz klaster Kubernetes
+
+```bash
+kind create cluster --config=kind-cluster.yaml
+```
+
+### 3. Załaduj obrazy do klastra
+
+```bash
+kind load docker-image systemy-chmurowe-backend:latest
+kind load docker-image systemy-chmurowe-frontend:latest
+```
+
+### 4. Utwórz trwały wolumin dla bazy danych
+
+```bash
+kubectl apply -f db-persistent-volume.yaml
+kubectl apply -f db-persistent-volume-claim.yaml
+```
+
+### 5. Uruchom kapsuły i usługi
+
+```bash
+kubectl apply -f db-pod.yaml
+kubectl apply -f db-service.yaml
+kubectl apply -f backend-pod.yaml
+kubectl apply -f backend-service.yaml
+kubectl apply -f frontend-pod.yaml
+kubectl apply -f frontend-service.yaml
+```
+
+### 6. Sprawdź status kapsuł
+
+```bash
+kubectl get pods
+```
+
+Wszystkie trzy kapsuły powinny mieć status `Running`:
+
+```txt
+NAME           READY   STATUS    RESTARTS   AGE
+db-pod         1/1     Running   0          2m
+backend-pod    1/1     Running   0          1m
+frontend-pod   1/1     Running   0          1m
+```
+
+### 7. Import danych
+
+W osobnym terminalu uruchom port-forward dla bazy danych:
+
+```bash
+kubectl port-forward db-pod 5433:5432
+```
+
+W drugim terminalu zaimportuj dane:
+
+```bash
+cd ../backend
+python import_csv.py
+```
+
+Po zakończeniu importu zatrzymaj port-forward (`Ctrl+C`).
+
+### 8. Uruchom port-forward dla backendu
+
+```bash
+kubectl port-forward backend-pod 5000:5000
+```
+
+Zostaw ten terminal otwarty.
+
+---
+
+## Adresy po uruchomieniu
+
+Frontend:
+
+```txt
+http://localhost:8080
+```
+
+Backend API:
+
+```txt
+http://localhost:5000
+```
+
+---
+
+## Testowanie API
+
+### Pobranie rekordów
+
+```txt
+http://localhost:5000/usage
+```
+
+### Filtrowanie po platformie
+
+```txt
+http://localhost:5000/usage?platform=TikTok
+```
+
+### Pobranie rekordu po ID
+
+```txt
+http://localhost:5000/usage/1
+```
+
+### Statystyki
+
+```txt
+http://localhost:5000/stats
+```
+
+---
+
+## Opis działania
+
+- `db-pod` – kapsuła z PostgreSQL, dane przechowywane w trwałym woluminie `db-persistent-volume`
+- `backend-pod` – kapsuła z Flask API, łączy się z bazą przez usługę `db-service`
+- `frontend-pod` – kapsuła z nginx serwującym stronę HTML
+- każda kapsuła posiada sondę żywotności (liveness probe) sprawdzającą czy komponent działa poprawnie
+
+---
+
+## Zatrzymanie projektu
+
+Usunięcie wszystkich zasobów:
+
+```bash
+kubectl delete -f frontend-service.yaml
+kubectl delete -f frontend-pod.yaml
+kubectl delete -f backend-service.yaml
+kubectl delete -f backend-pod.yaml
+kubectl delete -f db-service.yaml
+kubectl delete -f db-pod.yaml
+kubectl delete -f db-persistent-volume-claim.yaml
+kubectl delete -f db-persistent-volume.yaml
+```
+
+Usunięcie klastra:
+
+```bash
+kind delete cluster
+```
+
+---
+
+## Uwagi
+
+- Dataset nie jest przechowywany w repozytorium (ze względu na rozmiar)
+- Należy go pobrać z Kaggle i umieścić w `backend/genz_social_media_usage_1M.csv`
+- Port-forward dla backendu (`kubectl port-forward backend-pod 5000:5000`) musi być uruchomiony przez cały czas korzystania z aplikacji

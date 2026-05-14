@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: db-pod
+  labels:
+    app: db
+spec:
+  volumes:
+    - name: db-persistent-volume
+      persistentVolumeClaim:
+        claimName: db-persistent-volume-claim
+  containers:
+    - name: db-container
+      image: postgres:16
+      env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        - name: POSTGRES_DB
+          value: genz_social
+      ports:
+        - containerPort: 5432
+      volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: db-persistent-volume
+      livenessProbe:
+        exec:
+          command:
+            - pg_isready
+            - -U
+            - postgres
+            - -d
+            - genz_social
+        initialDelaySeconds: 15
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 3
